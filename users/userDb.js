@@ -4,6 +4,8 @@ module.exports = {
   get,
   getById,
   getUserPosts,
+  getPostsById,
+  insertPosts,
   insert,
   update,
   remove,
@@ -15,6 +17,10 @@ function get() {
 
 function getById(id) {
   return db("users").where({ id }).first();
+}
+
+function getPostsById(id) {
+  return db("posts").where({ id }).first();
 }
 
 function getUserPosts(userId) {
@@ -30,6 +36,10 @@ function insert(user) {
     .then((ids) => {
       return getById(ids[0]);
     });
+}
+
+function insertPosts(post) {
+  return db("posts").insert(post);
 }
 
 function update(id, changes) {

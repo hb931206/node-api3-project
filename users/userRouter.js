@@ -16,16 +16,20 @@ router.post("/", validateUser(), (req, res, next) => {
     });
 });
 
-router.post("/:id/posts", validateUserId(), (req, res, next) => {
+router.post("/:id/posts", (req, res, next) => {
   if (!req.body.text) {
     res.status(400).json({ message: "Missing Text Field" });
   }
+  const postObj = { user_id: req.params.id, text: req.body.text };
 
-  db.insert(req.body.text)
+  db.insertPosts(postObj)
     .then((post) => {
       res.status(201).json(post);
     })
-    .catch(next);
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ message: err });
+    });
 });
 
 router.get("/", (req, res, next) => {
