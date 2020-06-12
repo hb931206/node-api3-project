@@ -16,8 +16,16 @@ router.post("/", validateUser(), (req, res, next) => {
     });
 });
 
-router.post("/:id/posts", (req, res) => {
-  // do your magic!
+router.post("/:id/posts", validateUserId(), (req, res, next) => {
+  if (!req.body.text) {
+    res.status(400).json({ message: "Missing Text Field" });
+  }
+
+  db.insert(req.body.text)
+    .then((post) => {
+      res.status(201).json(post);
+    })
+    .catch(next);
 });
 
 router.get("/", (req, res, next) => {
@@ -36,9 +44,13 @@ router.get("/:id", validateUserId(), (req, res) => {
   res.status(200).json(req.user);
 });
 
-router.get("/:id/posts", validatePost(), (req, res) => {
+router.get("/:id/posts", validateUserId(), (req, res, next) => {
   // do your magic!
-  res.status(200).json(req.user);
+  db.getUserPosts(req.params.id)
+    .then((posts) => {
+      res.status(200).json(posts);
+    })
+    .catch(next);
 });
 
 router.delete("/:id", validateUserId(), (req, res, next) => {
@@ -56,7 +68,16 @@ router.delete("/:id", validateUserId(), (req, res, next) => {
     .catch(next);
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", validateUserId(), validateUser(), (req, res, next) => {
+  db.update(req.params.id, req.body)
+    .then((user) => {
+      if (user) {
+        res.status(200).json(user);
+      } else {
+        res.status(400).json({ message: "The user couldn't be found" });
+      }
+    })
+    .catch(next);
   // do your magic!
 });
 
@@ -96,7 +117,8 @@ function validatePost() {
   return (req, res, next) => {
     if (!req.body) {
       res.status(400).json({ message: "Missing Post Data" });
-    } else if (!req.text) {
+    } else if (!req.body.text) {
+      console.log(req.body.text);
       res.status(400).json({ message: "Missing Text Field" });
     } else {
       next();
